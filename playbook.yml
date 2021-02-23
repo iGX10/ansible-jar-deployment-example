@@ -1,0 +1,41 @@
+---
+
+- name: Deploy Eureka Registry Service
+  connection: ssh
+  gather_facts: false
+  hosts: all
+  vars:
+    jar_path: /home/gx/ansible-github-deploy-example/demo-0.0.1-SNAPSHOT.jar
+    deploy_path: /home/gx/app-deployment/eureka-registry-sevice/
+  tasks:
+    - name: Check if java is installed
+      shell: java -version 2>&1 | grep version | awk '{print $3}' | sed 's/"//g'
+      register: java_check_result
+      changed_when: False
+      failed_when: false
+
+    - debug:
+        msg: "No Java or something failed. rc = {{ java_check_result.rc }}"
+      when: java_check_result.rc==0
+
+    - debug:
+        msg: "Java is already installd. Version : {{ java_check_result.stdout }}"
+      when: java_check_result.rc!=0
+
+    - name: Install Java if the check step returns empty variable
+      apt:
+        name: default-jdk
+        update_cache: yes
+      when: java_check_result.rc==0
+
+    - name: Copy eureka jar to the deployment server
+      ansible.builtin.copy:
+        src: "{{ jar_path }}"
+        dest: "{{ deploy_path }}"
+        owner: root
+        group: root
+        mode: '0644'
+        backup: yes
+
+    - name: Execute eureka registry service
+      shell: java -jar "{{ deploy_path }}"/demo-0.0.1-SNAPSHOT.jar &

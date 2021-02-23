@@ -1,0 +1,10 @@
+deploy_servers:
+  hosts:
+    server1:
+      ansible_connection: ssh
+      ansible_host: "20.86.74.48"
+      #ansible_user: gx
+      #ansible_password: remote_host_password
+      ansible_password: "Pa$$w0rd1234"
+      ansible_become: yes
+      ansible_become_password: "Pa$$w0rd1234"
